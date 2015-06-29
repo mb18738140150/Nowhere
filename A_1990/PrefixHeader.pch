@@ -1,0 +1,51 @@
+//
+//  PrefixHeader.pch
+//  A_1990
+//
+//  Created by lanouhn on 15/6/12.
+//  Copyright (c) 2015年 1990. All rights reserved.
+//
+
+#ifndef UI_0612TableViewWithDataBase_PrefixHeader_pch
+#define UI_0612TableViewWithDataBase_PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif
+
+#import "Function.h"
+#import "NetworkEngine.h"
+#import "EGOImageView.h"
+#import "PostModel.h"
+#import "CategoryModel.h"
+#import "PapersCell.h"
+#import "HomeCell.h"
+
+#define kStatusBarHeight 20
+
+// 刷新数据
+#import "MJRefresh.h"
+#import "MyDownLoadGitFooter.h"
+
+//home 页面相关设置
+#define kTopBtnHeight 60
+
+#define kMinimumInteritemSpacing 2
+#define kMinimumLineSpacing 2
+#define kImageWidth 640
+#define kImageHeight 380
+#define kHomeCellID @"HomeCellID"
+
+// paper 页面相关间距
+#define kInspace 5
+#define kTitleLabelHeight 50
+#define kBigImageViewHeight 200
+#define kDescriptionLabelHeight 30
+
+// 详情界面toolBar的frame
+#define kTooBarHeight 50
+#define kToolBarY 627
+
+
+
