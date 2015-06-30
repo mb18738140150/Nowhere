@@ -40,6 +40,7 @@
 		3448BC801B3C18A500CD67F3 /* UIScrollView+MJRefresh.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448BC5C1B3C18A500CD67F3 /* UIScrollView+MJRefresh.m */; };
 		3448BC811B3C18A500CD67F3 /* UIView+MJExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448BC5E1B3C18A500CD67F3 /* UIView+MJExtension.m */; };
 		3448BC851B3C1BF000CD67F3 /* PostModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448BC841B3C1BF000CD67F3 /* PostModel.m */; };
+		34D1FCA01B417E9E00227662 /* ViewPager.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D1FC9F1B417E9E00227662 /* ViewPager.m */; };
 		34DF87061B3E8C7E0047518A /* CategoryModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF87051B3E8C7E0047518A /* CategoryModel.m */; };
 		34DF87091B3E95580047518A /* PaperTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF87081B3E95580047518A /* PaperTableViewController.m */; };
 		34DF870C1B3E96130047518A /* DetailsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF870B1B3E96130047518A /* DetailsViewController.m */; };
@@ -47,7 +48,6 @@
 		34DF87121B3E974C0047518A /* MyDownLoadGitFooter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF87111B3E974C0047518A /* MyDownLoadGitFooter.m */; };
 		34EB450B1B3D8E1800702DA0 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34EB450A1B3D8E1800702DA0 /* MainViewController.m */; };
 		34FA8DEF1B3EAC3400AA3309 /* HomeCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FA8DEE1B3EAC3400AA3309 /* HomeCell.m */; };
-		34FA8DF21B3EF2F600AA3309 /* ViewPapers.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FA8DF11B3EF2F600AA3309 /* ViewPapers.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,6 +128,8 @@
 		3448BC5E1B3C18A500CD67F3 /* UIView+MJExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+MJExtension.m"; sourceTree = "<group>"; };
 		3448BC831B3C1BF000CD67F3 /* PostModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostModel.h; sourceTree = "<group>"; };
 		3448BC841B3C1BF000CD67F3 /* PostModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostModel.m; sourceTree = "<group>"; };
+		34D1FC9E1B417E9E00227662 /* ViewPager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewPager.h; sourceTree = "<group>"; };
+		34D1FC9F1B417E9E00227662 /* ViewPager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewPager.m; sourceTree = "<group>"; };
 		34DF87041B3E8C7E0047518A /* CategoryModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CategoryModel.h; sourceTree = "<group>"; };
 		34DF87051B3E8C7E0047518A /* CategoryModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CategoryModel.m; sourceTree = "<group>"; };
 		34DF87071B3E95580047518A /* PaperTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PaperTableViewController.h; sourceTree = "<group>"; };
@@ -142,8 +144,6 @@
 		34EB450A1B3D8E1800702DA0 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		34FA8DED1B3EAC3400AA3309 /* HomeCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HomeCell.h; sourceTree = "<group>"; };
 		34FA8DEE1B3EAC3400AA3309 /* HomeCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HomeCell.m; sourceTree = "<group>"; };
-		34FA8DF01B3EF2F600AA3309 /* ViewPapers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewPapers.h; sourceTree = "<group>"; };
-		34FA8DF11B3EF2F600AA3309 /* ViewPapers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewPapers.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -311,9 +311,9 @@
 		3448BC241B3C182500CD67F3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				34D1FC9E1B417E9E00227662 /* ViewPager.h */,
+				34D1FC9F1B417E9E00227662 /* ViewPager.m */,
 				3448BC861B3C363400CD67F3 /* Cells */,
-				34FA8DF01B3EF2F600AA3309 /* ViewPapers.h */,
-				34FA8DF11B3EF2F600AA3309 /* ViewPapers.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -566,6 +566,7 @@
 				3448BC811B3C18A500CD67F3 /* UIView+MJExtension.m in Sources */,
 				34DF870F1B3E96F70047518A /* PapersCell.m in Sources */,
 				3448BC701B3C18A500CD67F3 /* MJRefreshBackFooter.m in Sources */,
+				34D1FCA01B417E9E00227662 /* ViewPager.m in Sources */,
 				3448BC741B3C18A500CD67F3 /* MJRefreshAutoGifFooter.m in Sources */,
 				3448BC781B3C18A500CD67F3 /* MJRefreshBackNormalFooter.m in Sources */,
 				3448BC721B3C18A500CD67F3 /* MJRefreshFooter.m in Sources */,
@@ -590,7 +591,6 @@
 				34EB450B1B3D8E1800702DA0 /* MainViewController.m in Sources */,
 				3448BC801B3C18A500CD67F3 /* UIScrollView+MJRefresh.m in Sources */,
 				34DF87061B3E8C7E0047518A /* CategoryModel.m in Sources */,
-				34FA8DF21B3EF2F600AA3309 /* ViewPapers.m in Sources */,
 				3448BC731B3C18A500CD67F3 /* MJRefreshHeader.m in Sources */,
 				3448BC791B3C18A500CD67F3 /* MJRefreshBackStateFooter.m in Sources */,
 				34FA8DEF1B3EAC3400AA3309 /* HomeCell.m in Sources */,

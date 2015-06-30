@@ -9,6 +9,8 @@
 #import "PaperTableViewController.h"
 #import "DetailsViewController.h"
 
+
+
 @interface PaperTableViewController ()<UITableViewDelegate, UITableViewDataSource, NetworkEngineDelegate> //遵守协议
 
 //@property (nonatomic , retain) UITableView *tableView;
@@ -24,29 +26,37 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor orangeColor];
+//    self.view.backgroundColor = [UIColor orangeColor];
+    
     
     self.tableView.backgroundColor = [UIColor lightGrayColor];
     
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     
+    //关闭tableView的垂直滚动条
+    self.tableView.showsVerticalScrollIndicator = NO;
+    
     self.lastTime = @"0";
     [self getDataFromUrl];
-
-}
-
--(void)viewDidAppear:(BOOL)animated
-{
     
-    self.view.frame = CGRectMake(self.view.frame.size.width, kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
+    
+
 }
+
+//-(void)viewDidAppear:(BOOL)animated
+//{
+//    
+//    self.view.frame = CGRectMake(self.view.frame.size.width, kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
+//}
 
 #pragma mark - 请求数据方法
 - (void)getDataFromUrl
 {
     PostModel *model = (PostModel *)[self.papersModels lastObject];
     CGFloat last = [model.id90 floatValue];
+    
+    //最后一条数据的id为9715
     if (last != 9715) {
       
         // 请求数据
@@ -55,10 +65,10 @@
         
         [engine start];
     }
-        // 请求刷新数据
-        [self.tableView.footer endRefreshing];
-        
     
+    // 结束刷新
+    [self.tableView.footer endRefreshing];
+    [self.tableView.header endRefreshing];
 }
 
 #pragma mark - 请求数据成功的代理方法
@@ -95,6 +105,10 @@
         
     }
     
+    //下拉刷新
+    self.tableView.header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
+    
+    
     // 上拉刷新
     MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
     footer.refreshingTitleHidden = YES;
@@ -103,7 +117,17 @@
     
     // 拿到数据之后, 刷新tableView
     [self.tableView reloadData];
+    
+
 }
+
+#pragma mark - 下拉刷新 ( *** 待定 *** )
+-(void)loadNewData
+{
+    self.lastTime = @"0";
+    [self getDataFromUrl];
+}
+
 
 #pragma mark - 懒加载paperModels
 - (NSMutableArray *)papersModels
@@ -163,7 +187,8 @@
     PostModel *model = [self.papersModels objectAtIndex:indexPath.row];
     detailVC.webHtml = model.appview;
     [self presentViewController:detailVC animated:YES completion:nil];
-  
+    
+    
 }
 
 

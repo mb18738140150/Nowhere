@@ -9,7 +9,14 @@
 #import "HomeCollectionViewController.h"
 #import "DetailsViewController.h"
 
+#import "ViewPager.h"
 
+
+//section 头分区的重用标识符
+#define kHeaderIdentifire @"HeaderIdentifire"
+
+//section 脚分区的重用标识符
+#define kFooterIdentifire @"FooterIdentifire"
 
 
 @interface HomeCollectionViewController ()<NetworkEngineDelegate>
@@ -17,6 +24,8 @@
 @property (nonatomic , retain) NSString *lastTime;
 @property (nonatomic , retain) NSMutableArray *homeModels; //存放model
 @property (nonatomic , retain) NSMutableArray *banners; //存放轮播图model
+
+@property (nonatomic , retain) ViewPager *viewPager;
 
 @end
 
@@ -37,49 +46,57 @@
     //item行之间最小间距
     layout.minimumLineSpacing = kMinimumLineSpacing;
     
+    //设置分区页眉（Header）大小
+    layout.headerReferenceSize = CGSizeMake(viewWidth, viewWidth * kImageHeight / kImageWidth);
+    
     return [self initWithCollectionViewLayout:layout];
 }
 
--(void)viewDidAppear:(BOOL)animated
-{
-    self.view.frame = CGRectMake(0 , kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
-}
+//-(void)viewDidAppear:(BOOL)animated
+//{
+//    self.view.frame = CGRectMake(0 , kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
+//}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 //    self.view.backgroundColor = [UIColor yellowColor];
     
-//    self.view.frame = CGRectMake(0 , 60 , self.view.frame.size.width, self.view.frame.size.height);
     self.collectionView.backgroundColor = [UIColor whiteColor];
     
-    NSLog(@"***************%f", self.collectionView.frame.origin.y);
     self.lastTime = @"0";
     
     //请求数据
     [self getDataFromUrl];
     
+    //关闭collectionView的垂直滚动条
+    self.collectionView.showsVerticalScrollIndicator = NO;
     
     //注册item
     [self.collectionView registerClass:[HomeCell class] forCellWithReuseIdentifier:kHomeCellID];
+    
+    //注册页眉（section的Header）
+    [self.collectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:kHeaderIdentifire];
+    
+    //注册页脚（section的Footer）
+    [self.collectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:kFooterIdentifire];
     
 }
 
 #pragma mark - UICollectionView Delegate
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
-#warning 此处暂时写为1个分区(计划 轮播图 , 集合视图 两个section)
     return 1;
 }
 -(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
+
     return [self.homeModels count];
 }
 -(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     HomeCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:kHomeCellID forIndexPath:indexPath];
-    
-#warning 显示cell时 待优化 ("这个设计了不起" 板块需要 剔除 ; cell 需要双数显示)
+
     PostModel *model = [self.homeModels objectAtIndex:indexPath.row];
     cell.homeImage.imageURL = [NSURL URLWithString:model.imageViewURL];
     cell.titleLabel.text = model.title;
@@ -106,6 +123,15 @@
     return _homeModels;
 }
 
+#pragma mark - banners 数组懒加载
+-(NSMutableArray *)banners
+{
+    if (!_banners) {
+        self.banners = [NSMutableArray array];
+    }
+    return _banners;
+}
+
 #pragma mark - 请求数据
 -(void)getDataFromUrl
 {
@@ -117,6 +143,7 @@
     
     //结束刷新
     [self.collectionView.footer endRefreshing];
+    [self.collectionView.header endRefreshing];
 }
 
 #pragma mark - 数据请求成功后,解析数据,封装model
@@ -147,18 +174,26 @@
     //上拉刷新列表时,不断获取model,array用于存放刷新后的model
     for (int i = 0 ; i < arr.count ; i++) {
         NSDictionary *dict = [[arr objectAtIndex:i] objectForKey:@"post"];
-        PostModel *item = [[PostModel alloc]init];
-        NSString *imageUrl = [[arr objectAtIndex:i]objectForKey:@"image"];
-        item.id90 = dict[@"id"];
-        item.title = dict[@"title"];
-        item.description90 = dict[@"description"];
-        item.appview = dict[@"appview"];
-        item.imageViewURL = imageUrl;
-        item.category.image_smallURL = [dict[@"category"] objectForKey:@"image_small"];
-        [self.homeModels addObject:item];
         
-        [item release];
+        //剔除 "这个设计了不起" ,即description为空(null)
+        if (![[dict objectForKey:@"description"]isKindOfClass:[NSNull class]]) {
+            PostModel *item = [[PostModel alloc]init];
+            NSString *imageUrl = [[arr objectAtIndex:i]objectForKey:@"image"];
+            item.id90 = dict[@"id"];
+            item.title = dict[@"title"];
+            item.description90 = dict[@"description"];
+            item.appview = dict[@"appview"];
+            item.imageViewURL = imageUrl;
+            item.category.image_smallURL = [dict[@"category"] objectForKey:@"image_small"];
+            [self.homeModels addObject:item];
+            
+            [item release];
+        }
     }
+    
+    //下拉刷新
+    self.collectionView.header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
+    
     
     //上拉刷新
     MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
@@ -167,6 +202,56 @@
     
     //拿到数据后刷新collectionView
     [self.collectionView reloadData];
+}
+
+-(void)loadNewData
+{
+    self.lastTime = @"0";
+    //下拉刷新时需要注意 **** self.banners **** 数组需要情空,否则,会一直重复添加轮播图元素
+    [self.banners removeAllObjects];
+    [self getDataFromUrl];
+}
+
+
+#pragma mark - 添加轮播图(scrollView)
+-(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
+{
+    if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
+        UICollectionReusableView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:kHeaderIdentifire forIndexPath:indexPath];
+            
+            //设置headerView的bounds,目的使scrollView轮播图与collectionView的cell有间隔
+            headerView.bounds = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.width * kImageHeight / kImageWidth + 5);
+            
+            headerView.userInteractionEnabled = YES;
+            
+            self.viewPager = [[ViewPager alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,self.view.frame.size.width * kImageHeight / kImageWidth ) andPages:self.banners];
+            [headerView addSubview:self.viewPager];
+        
+            //给scrollView的视图添加tap手势
+            for (int i = 0 ; i < self.viewPager.myPageControl.numberOfPages ; i++) {
+                UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(handleGesture:)];
+                UIView *view = [self.viewPager.myScrollView viewWithTag:101 + i];
+                [view addGestureRecognizer:tap];
+            }
+        
+        return headerView;
+    }else {
+        
+        UICollectionReusableView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:kFooterIdentifire forIndexPath:indexPath];
+        footerView.backgroundColor = [UIColor yellowColor];
+        return footerView;
+    }
+}
+
+#pragma mark - 轮播图tap手势点击进入详情界面
+-(void)handleGesture:(UIGestureRecognizer *)gestureRecognizer
+{
+    //确定点击当前视图的View的tag值
+    UIView *view = [gestureRecognizer view];
+    PostModel *model = [self.banners objectAtIndex:view.tag - 101];
+    DetailsViewController *detailsVC = [[DetailsViewController alloc]init];
+    detailsVC.webHtml = model.appview;
+    [self presentViewController:detailsVC animated:YES completion:nil];
 }
 
 

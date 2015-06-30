@@ -23,8 +23,10 @@
     
     //根视图控制器
     _mainVC = [[MainViewController alloc]init];
-    self.window.rootViewController = self.mainVC;
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:self.mainVC];
+    self.window.rootViewController = nav;
     [self.mainVC release];
+    [nav release];
     
     return YES;
 }

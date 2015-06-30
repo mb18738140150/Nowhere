@@ -29,6 +29,9 @@
     NSURL *url = [NSURL URLWithString:self.webHtml];
     NSURLRequest *request = [[NSURLRequest alloc]initWithURL:url];
     
+    // 详情界面状态栏底色Label
+    UILabel *whiteLabel = [Function createLabelWithName:nil andFrame:CGRectMake(self.view.frame.origin.x, self.view.frame.origin.y, self.view.frame.size.width, kStatusBarHeight)];
+    whiteLabel.backgroundColor = [UIColor whiteColor];
     
     // 详情界面toolBar
     UIToolbar *toolBar = [[UIToolbar alloc] initWithFrame:CGRectMake(self.view.frame.origin.x, kToolBarY, self.view.frame.size.width, kTooBarHeight)];
@@ -42,6 +45,7 @@
     
     
     [self.webView loadRequest:request];
+    [self.webView addSubview:whiteLabel];
     [self.view addSubview:self.webView];
     [self.webView addSubview:toolBar];
     
@@ -55,10 +59,11 @@
 {
     [self.webView goBack];
     
-#warning dismiss回原控制器后,home页和paper页的列表布局会置顶 (*** 待解决 ***)
+//设置导航条,解决了view置顶的问题
     [self dismissViewControllerAnimated:YES completion:^{
         NSLog(@"返回");
     }];
+
     
     
 }

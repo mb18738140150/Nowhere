@@ -64,12 +64,14 @@
 }
 
 #pragma mark - 实现父类的方法
+
 - (void)placeSubviews
 {
     [super placeSubviews];
     
     self.gifView.frame = self.bounds;
-    
+#warning 此处更改了加载动图所在的视图背景色
+    self.gifView.backgroundColor = [UIColor colorWithRed:29.0/255.0 green:28.0/255.0 blue:28.0/255.0 alpha:1.0];
     if (self.isRefreshingTitleHidden) {
         self.gifView.contentMode = UIViewContentModeCenter;
     } else {

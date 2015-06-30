@@ -19,18 +19,22 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    //关闭导航条毛玻璃效果  
+    self.navigationController.navigationBar.translucent = NO;
+    
+    
     //获取屏幕宽度和高度
     CGFloat viewWidth = CGRectGetWidth(self.view.frame);
     CGFloat viewHeight = CGRectGetHeight(self.view.frame);
     
     //创建home和paper按钮
-    self.homeBtn = [Function createButtonWithName:@"home" andFrame:CGRectMake(0, kStatusBarHeight , viewWidth / 2, kTopBtnHeight)];
+    self.homeBtn = [Function createButtonWithName:@"home" andFrame:CGRectMake(0, 0 , viewWidth / 2, kTopBtnHeight)];
     self.homeBtn.tag = 101;
     [self.homeBtn addTarget:self action:@selector(clickAction:) forControlEvents:UIControlEventTouchUpInside];
     //默认home按钮为选中状态
     self.homeBtn.selected = YES;
     
-    self.paperBtn = [Function createButtonWithName:@"paper" andFrame:CGRectMake(viewWidth / 2, kStatusBarHeight , viewWidth / 2 , kTopBtnHeight)];
+    self.paperBtn = [Function createButtonWithName:@"paper" andFrame:CGRectMake(viewWidth / 2, 0 , viewWidth / 2 , kTopBtnHeight)];
     self.paperBtn.tag = 102;
     [self.paperBtn addTarget:self action:@selector(clickAction:) forControlEvents:UIControlEventTouchUpInside];
     self.homeBtn.backgroundColor = [UIColor yellowColor];
@@ -38,7 +42,7 @@
     
  
     //创建scrollView,控制home和paper两个界面的滑动切换
-    self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, kStatusBarHeight , viewWidth, viewHeight - kStatusBarHeight)];
+    self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0 , viewWidth, viewHeight - kTopBtnHeight)];
     //****  不允许垂直方向上进行滚动  ****
     self.scrollView.contentSize = CGSizeMake(viewWidth * 2 , 0);
     //设置scrollView属性
@@ -58,8 +62,8 @@
     UIView *view1 = self.homeVC.view;
     UIView *view2 = self.paperVC.view;
 
-//    view1.frame = CGRectMake(0, 0, viewWidth, viewHeight);
-//    view2.frame = CGRectMake(viewWidth ,0, viewWidth , viewHeight);
+    view1.frame = CGRectMake(0, 0, viewWidth, viewHeight - kTopBtnHeight);
+    view2.frame = CGRectMake(viewWidth ,0, viewWidth , viewHeight - kTopBtnHeight);
     //设置scrollView代理
     self.scrollView.delegate = self;
     
@@ -67,13 +71,17 @@
     [self.scrollView addSubview:view1];
     [self.scrollView addSubview:view2];
     [self.view addSubview:self.scrollView];
-    [self.view addSubview:self.homeBtn];
-    [self.view addSubview:self.paperBtn];
+    
+    [self.navigationController.view addSubview:self.homeBtn];
+    [self.navigationController.view addSubview:self.paperBtn];
     
 
+    [self addChildViewController:self.homeVC];
+    [self addChildViewController:self.paperVC];
     
     
 }
+
 
 #pragma mark - top按钮点击选择
 -(void)clickAction:(UIButton *)sender
