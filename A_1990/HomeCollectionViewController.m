@@ -8,7 +8,6 @@
 
 #import "HomeCollectionViewController.h"
 #import "DetailsViewController.h"
-
 #import "ViewPager.h"
 
 

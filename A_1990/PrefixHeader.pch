@@ -21,6 +21,8 @@
 #import "CategoryModel.h"
 #import "PapersCell.h"
 #import "HomeCell.h"
+#import "ListModel.h"
+#import "TWTSideMenuViewController.h"
 
 #define kStatusBarHeight 20
 
@@ -48,4 +50,11 @@
 #define kToolBarY 627
 
 
+#pragma mark button 宏定义
+
+#define koriginX 60
+#define Koriginy 200
+#define kSpace 30
+#define Kwidth 80
+#define Kheight 30
 

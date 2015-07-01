@@ -7,8 +7,14 @@
 //
 
 #import "AppDelegate.h"
+#import "TWTSideMenuViewController.h"
+#import "LeftSideViewController.h"
 
-@interface AppDelegate ()
+@interface AppDelegate ()<TWTSideMenuViewControllerDelegate>
+
+@property (nonatomic , retain) TWTSideMenuViewController *sideMenuViewController;
+@property (nonatomic , retain) LeftSideViewController *leftSideVC;
+
 
 @end
 
@@ -22,11 +28,24 @@
     [self.window makeKeyAndVisible];
     
     //根视图控制器
+//    _mainVC = [[MainViewController alloc]init];
+//    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:self.mainVC];
+//    self.window.rootViewController = nav;
+//    [self.mainVC release];
+//    [nav release];
+    
     _mainVC = [[MainViewController alloc]init];
     UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:self.mainVC];
-    self.window.rootViewController = nav;
-    [self.mainVC release];
-    [nav release];
+    _leftSideVC = [[LeftSideViewController alloc]init];
+    
+    self.sideMenuViewController = [[TWTSideMenuViewController alloc]initWithMenuViewController:self.leftSideVC mainViewController:nav];
+    self.sideMenuViewController.edgeOffset = (UIOffset) {.horizontal = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone ? 18.0f : 0.0f };
+    self.sideMenuViewController.zoomScale = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone ? 1.0f : 1.0f;
+    self.sideMenuViewController.delegate = self;
+    self.window.rootViewController = self.sideMenuViewController;
+    
+    
+    
     
     return YES;
 }

@@ -14,6 +14,13 @@
 
 @implementation MainViewController
 
+-(void)viewWillAppear:(BOOL)animated
+{
+    self.homeBtn.hidden = NO;
+    self.paperBtn.hidden = NO;
+}
+
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -22,13 +29,23 @@
     //关闭导航条毛玻璃效果  
     self.navigationController.navigationBar.translucent = NO;
     
+    //添加leftItemBar，点击弹出侧边栏
+    UIBarButtonItem *openItem = [[UIBarButtonItem alloc]initWithTitle:@"Menu" style:UIBarButtonItemStylePlain target:self action:@selector(openBtnPressed)];
+    self.navigationItem.leftBarButtonItem = openItem;
+    
+    UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(openBtnPressed)];
+    
+    [self.view addGestureRecognizer:swipe];
+
+    
+    
     
     //获取屏幕宽度和高度
     CGFloat viewWidth = CGRectGetWidth(self.view.frame);
     CGFloat viewHeight = CGRectGetHeight(self.view.frame);
     
     //创建home和paper按钮
-    self.homeBtn = [Function createButtonWithName:@"home" andFrame:CGRectMake(0, 0 , viewWidth / 2, kTopBtnHeight)];
+    self.homeBtn = [Function createButtonWithName:@"home" andFrame:CGRectMake(50, 0 , viewWidth / 2 - 50, kTopBtnHeight)];
     self.homeBtn.tag = 101;
     [self.homeBtn addTarget:self action:@selector(clickAction:) forControlEvents:UIControlEventTouchUpInside];
     //默认home按钮为选中状态
@@ -55,8 +72,6 @@
     self.scrollView.showsVerticalScrollIndicator = NO;
     
     //切换视图
-#warning 切换视图时会出现无法拖动tableView的情况,待优化
-   
     self.homeVC = [[HomeCollectionViewController alloc]initWithFrame:self.view.bounds];
     self.paperVC = [[PaperTableViewController alloc]init];
     UIView *view1 = self.homeVC.view;
@@ -80,6 +95,14 @@
     [self addChildViewController:self.paperVC];
     
     
+}
+
+#pragma mark - 点击弹出菜单栏
+-(void)openBtnPressed
+{
+    NSLog(@"弹出菜单栏");
+
+    [self.sideMenuViewController openMenuAnimated:YES completion:nil];
 }
 
 
