@@ -25,8 +25,13 @@
 //创建imageView
 + (UIImageView *)createImageViewWithFrame:(CGRect)frame;
 
+// 创建alertView
++ (UIAlertView *)creatAletViewWithFrame:(CGRect)frame andTitile:(NSString *)title andMessage:(NSString *)message andCancelButtonTitile:(NSString *)cancelTitle andOtherTitle1:(NSString *)title1;
 
+//获得沙盒路径下的缓存文件夹的路径
++ (NSString *)getCachePath;
 
-
+//创建文件夹即路径
++ (NSString *)createFileAndPath;
 
 @end

@@ -26,6 +26,9 @@
 
 @property (nonatomic , retain) ViewPager *viewPager;
 
+@property (nonatomic , retain) MBProgressHUD *hud;
+
+
 @end
 
 @implementation HomeCollectionViewController
@@ -51,19 +54,36 @@
     return [self initWithCollectionViewLayout:layout];
 }
 
-//-(void)viewDidAppear:(BOOL)animated
-//{
-//    self.view.frame = CGRectMake(0 , kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
-//}
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-//    self.view.backgroundColor = [UIColor yellowColor];
     
     self.collectionView.backgroundColor = [UIColor whiteColor];
     
+    
+    self.hud = [[[MBProgressHUD alloc]init] autorelease];
+    [self.view addSubview:self.hud];
+    
+    _hud.labelText = @"正在加载...";
+    _hud.mode = MBProgressHUDModeCustomView;
+    SXWaveCell *wave = [SXWaveCell wave];
+    [wave setPrecent:nil textColor:[UIColor whiteColor] type:1 alpha:0.3];
+    [wave addAnimateWithType:1];
+    wave.endless = YES;
+    _hud.customView = wave;
+    _hud.dimBackground = YES;
+    [_hud show:YES];
+    
     self.lastTime = @"0";
+    
+    
+    UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(openBtnPressed)];
+    swipe.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.collectionView addGestureRecognizer:swipe];
+    [swipe release];
+    
     
     //请求数据
     [self getDataFromUrl];
@@ -82,6 +102,12 @@
     
 }
 
+#pragma mark - 右扫弹出菜单栏
+-(void)openBtnPressed
+{
+    [self.sideMenuViewController openMenuAnimated:YES completion:nil];
+}
+
 #pragma mark - UICollectionView Delegate
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
@@ -98,6 +124,7 @@
 
     PostModel *model = [self.homeModels objectAtIndex:indexPath.row];
     cell.homeImage.imageURL = [NSURL URLWithString:model.imageViewURL];
+    cell.whiteImage.imageURL = [NSURL URLWithString:model.category.white_imageURL];
     cell.titleLabel.text = model.title;
     return cell;
     
@@ -109,6 +136,11 @@
     DetailsViewController *detailVC = [[DetailsViewController alloc]init];
     PostModel *model = [self.homeModels objectAtIndex:indexPath.row];
     detailVC.webHtml = model.appview;
+#pragma mark 此处必须传model,否则详情界面的收藏功能会无法写入数据
+    detailVC.model = model;
+    
+    detailVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    
     [self presentViewController:detailVC animated:YES completion:nil];
 }
 
@@ -138,7 +170,7 @@
     NSString *url = [NSString stringWithFormat:@"http://app.qdaily.com/app/homes/index/%@.json?" , self.lastTime];
     NetworkEngine *engine = [NetworkEngine networkEngineWithURL:[NSURL URLWithString:url] params:nil delegate:self];
     //启动网络请求
-    [engine start];
+    [engine startWithDic:nil];
     
     //结束刷新
     [self.collectionView.footer endRefreshing];
@@ -148,56 +180,53 @@
 #pragma mark - 数据请求成功后,解析数据,封装model
 -(void)networkDidFinishLoading:(NetworkEngine *)engine withInfo:(NSData *)data
 {
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-    //获取 collection需要展示的数据数组list(内存放每次得到的n个model)
-    NSArray *arr = [[[dic objectForKey:@"response"]objectForKey:@"feeds"]objectForKey:@"list"];
-    self.lastTime = [[[dic objectForKey:@"response"]objectForKey:@"feeds"]objectForKey:@"last_time"];
-    
-    //获取 轮播图 需要展示的数据数组list
-    NSArray *views = [[[dic objectForKey:@"response"]objectForKey:@"banners"]objectForKey:@"list"];
-    for (int i = 0 ; i < views.count ; i++) {
-        NSDictionary *dict = [[views objectAtIndex:i]objectForKey:@"post"];
-        PostModel *item = [[PostModel alloc]init];
-        NSString *imageUrl = [[views objectAtIndex:i]objectForKey:@"image"];
-        item.id90 = dict[@"id"];
-        item.title = dict[@"title"];
-        item.description90 = dict[@"description"];
-        item.appview = dict[@"appview"];
-        item.imageViewURL = imageUrl;
-        item.category.image_smallURL = [dict[@"category"] objectForKey:@"image_small"];
-        [self.banners addObject:item];
+    if (data != nil) {
+        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+        //获取 collection需要展示的数据数组list(内存放每次得到的n个model)
+        NSArray *arr = [[[dic objectForKey:@"response"]objectForKey:@"feeds"]objectForKey:@"list"];
+        self.lastTime = [[[dic objectForKey:@"response"]objectForKey:@"feeds"]objectForKey:@"last_time"];
         
-        [item release];
-    }
-    
-    //上拉刷新列表时,不断获取model,array用于存放刷新后的model
-    for (int i = 0 ; i < arr.count ; i++) {
-        NSDictionary *dict = [[arr objectAtIndex:i] objectForKey:@"post"];
-        
-        //剔除 "这个设计了不起" ,即description为空(null)
-        if (![[dict objectForKey:@"description"]isKindOfClass:[NSNull class]]) {
-            PostModel *item = [[PostModel alloc]init];
-            NSString *imageUrl = [[arr objectAtIndex:i]objectForKey:@"image"];
-            item.id90 = dict[@"id"];
-            item.title = dict[@"title"];
-            item.description90 = dict[@"description"];
-            item.appview = dict[@"appview"];
-            item.imageViewURL = imageUrl;
-            item.category.image_smallURL = [dict[@"category"] objectForKey:@"image_small"];
-            [self.homeModels addObject:item];
-            
-            [item release];
+        //获取 轮播图 需要展示的数据数组list
+        NSArray *views = [[[dic objectForKey:@"response"]objectForKey:@"banners"]objectForKey:@"list"];
+        for (int i = 0 ; i < views.count ; i++) {
+            NSDictionary *dict = [[views objectAtIndex:i]objectForKey:@"post"];
+            PostModel *item = [[PostModel alloc]initWithDictionary:dict];
+            //剔除"投票类"
+            if (![dict objectForKey:@"image"]){
+                NSString *imageUrl = [[views objectAtIndex:i]objectForKey:@"image"];
+                item.imageViewURL = imageUrl;
+                [self.banners addObject:item];
+                [item release];
+            }
         }
+        [self.hud removeFromSuperview];
+        
+        //上拉刷新列表时,不断获取model,array用于存放刷新后的model
+        for (int i = 0 ; i < arr.count ; i++) {
+            NSDictionary *dict = [[arr objectAtIndex:i] objectForKey:@"post"];
+            
+            //剔除 "这个设计了不起" ,即description为空(null)
+            if (![[dict objectForKey:@"description"]isKindOfClass:[NSNull class]]) {
+                PostModel *item = [[PostModel alloc]initWithDictionary:dict];
+                if (![dict objectForKey:@"image"]) {
+                    NSString *imageUrl = [[arr objectAtIndex:i]objectForKey:@"image"];
+                    item.imageViewURL = imageUrl;
+                    [self.homeModels addObject:item];
+                    
+                    [item release];
+                }
+            }
+        }
+        
+        //上拉刷新
+        MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
+        footer.refreshingTitleHidden = YES;
+        self.collectionView.footer = footer;
     }
     
     //下拉刷新
     self.collectionView.header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
-    
-    
-    //上拉刷新
-    MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
-    footer.refreshingTitleHidden = YES;
-    self.collectionView.footer = footer;
+
     
     //拿到数据后刷新collectionView
     [self.collectionView reloadData];
@@ -208,6 +237,9 @@
     self.lastTime = @"0";
     //下拉刷新时需要注意 **** self.banners **** 数组需要情空,否则,会一直重复添加轮播图元素
     [self.banners removeAllObjects];
+    [self.collectionView reloadData];
+    //清空home的model数组
+    [self.homeModels removeAllObjects];
     [self getDataFromUrl];
 }
 
@@ -250,6 +282,18 @@
     PostModel *model = [self.banners objectAtIndex:view.tag - 101];
     DetailsViewController *detailsVC = [[DetailsViewController alloc]init];
     detailsVC.webHtml = model.appview;
+    
+//    detailsVC.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
+    
+#pragma mark - 点击轮播图 切换 详情界面 水波纹效果
+    CATransition *transition = [CATransition animation];
+    transition.duration = 1.0f;
+    transition.timingFunction = UIViewAnimationCurveEaseInOut;
+    transition.type = @"rippleEffect";
+    transition.subtype = kCATransitionFromTop;
+    transition.delegate = self;
+    [self.view.window.layer addAnimation:transition forKey:nil];
+    
     [self presentViewController:detailsVC animated:YES completion:nil];
 }
 

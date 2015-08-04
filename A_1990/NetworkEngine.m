@@ -3,7 +3,7 @@
 //  UI_0618QiuBaiDemo
 //
 //  Created by lanouhn on 15/6/18.
-//  Copyright (c) 2015年 石晨欣. All rights reserved.
+//  Copyright (c) 2015年 A1990. All rights reserved.
 //
 
 #import "NetworkEngine.h"
@@ -73,7 +73,7 @@
 }
 
 #pragma mark - 启动网络的方法
--(void)start
+-(void)startWithDic:(NSDictionary *)dic
 {
     if ([self.HTTPMethod isEqualToString:@"GET"] && self.stringFromParams) {
         NSString *getUrlStr = [self.url.absoluteString stringByAppendingFormat:@"?%@" , self.stringFromParams];
@@ -82,6 +82,8 @@
     }
     //创建可变的请求对象 （cachePolicy参数写错）
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:60];
+    
+    request.allHTTPHeaderFields = dic;
     
     //设置请求方式
     request.HTTPMethod = self.HTTPMethod;

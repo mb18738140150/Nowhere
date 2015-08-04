@@ -15,5 +15,8 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic , retain) MainViewController *mainVC;
 
+@property (nonatomic , copy) NSString *uid;
+
+
 @end
 

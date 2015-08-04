@@ -48,9 +48,41 @@
     return [imageView autorelease];
 }
 
+// 创建alertView
++(UIAlertView *)creatAletViewWithFrame:(CGRect)frame andTitile:(NSString *)title andMessage:(NSString *)message andCancelButtonTitile:(NSString *)cancelTitle andOtherTitle1:(NSString *)title1
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:cancelTitle otherButtonTitles:title1, nil];
+    alertView.frame = frame;
+    return [alertView autorelease];
+}
 
+#pragma mark - 获得沙盒路径下的缓存文件夹的路径
++ (NSString *)getCachePath
+{
+    NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *path = [array objectAtIndex:0];
+    
+    return path;
+}
 
-
+#pragma mark - 创建文件夹即路径
++ (NSString *)createFileAndPath
+{
+    NSString *homePath = [self getCachePath];
+    AppDelegate *app = [UIApplication sharedApplication].delegate;
+    
+    if (app.uid != nil) {
+        NSString *fileName = [NSString stringWithFormat:@"%@" , app.uid];
+        NSString *filePath = [homePath stringByAppendingPathComponent:fileName];
+        
+        NSFileManager *fm = [NSFileManager defaultManager];
+        [fm createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+        return filePath;
+    }
+    
+    return homePath;
+    
+}
 
 
 

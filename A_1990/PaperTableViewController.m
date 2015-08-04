@@ -18,6 +18,7 @@
 
 @property (nonatomic , retain) NSString *lastTime;
 
+@property (nonatomic , retain) MBProgressHUD *hud;
 
 @end
 
@@ -26,10 +27,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-//    self.view.backgroundColor = [UIColor orangeColor];
     
+    //不显示tableView的分割线
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    self.tableView.backgroundColor = [UIColor lightGrayColor];
+//    self.tableView.backgroundColor = [UIColor lightGrayColor];
     
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
@@ -37,18 +39,28 @@
     //关闭tableView的垂直滚动条
     self.tableView.showsVerticalScrollIndicator = NO;
     
+    self.hud = [[[MBProgressHUD alloc]init] autorelease];
+    [self.view addSubview:self.hud];
+    
+    _hud.labelText = @"正在加载...";
+    _hud.mode = MBProgressHUDModeCustomView;
+    SXWaveCell *wave = [SXWaveCell wave];
+    [wave setPrecent:nil textColor:[UIColor whiteColor] type:1 alpha:0.3];
+    [wave addAnimateWithType:1];
+    wave.endless = YES;
+    _hud.customView = wave;
+    _hud.dimBackground = YES;
+    [_hud show:YES];
+    
+    
     self.lastTime = @"0";
+    
     [self getDataFromUrl];
     
     
 
 }
 
-//-(void)viewDidAppear:(BOOL)animated
-//{
-//    
-//    self.view.frame = CGRectMake(self.view.frame.size.width, kTopBtnHeight , self.view.frame.size.width, self.view.frame.size.height - kTopBtnHeight);
-//}
 
 #pragma mark - 请求数据方法
 - (void)getDataFromUrl
@@ -63,7 +75,7 @@
         NSString *url = [NSString stringWithFormat:@"http://app.qdaily.com/app/papers/index/%@.json?" , self.lastTime];
         NetworkEngine *engine = [NetworkEngine networkEngineWithURL:[NSURL URLWithString:url] params:nil delegate:self];
         
-        [engine start];
+        [engine startWithDic:nil];
     }
     
     // 结束刷新
@@ -75,56 +87,51 @@
 -(void)networkDidFinishLoading:(NetworkEngine *)engine withInfo:(NSData *)data
 {
 
-#warning 数据刷新  -- 当 所有 有效数据加载完时,程序会崩溃 (原因: 当最后一组数据加载完时,last_time的value值为null,关键性key值has_more为FALSE,之前都为TRUE)
-    NSError *error = nil;
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
-    
-    NSArray *arr = [[[dic objectForKey:@"response"] objectForKey:@"feeds"] objectForKey:@"list"];
-    self.lastTime = [[[dic objectForKey:@"response"] objectForKey:@"feeds"] objectForKey:@"last_time"];
-    NSLog(@"%@" , self.lastTime);
-    for (int i = 0; i < arr.count; i++) {
-        NSDictionary *dict = [[arr objectAtIndex:i] objectForKey:@"post"];
-        PostModel *item = [[PostModel alloc] init];
+    if (data != nil) {
+#pragma mark - 数据刷新  -- 当 所有 有效数据加载完时,程序会崩溃 (原因: 当最后一组数据加载完时,last_time的value值为null,关键性key值has_more为FALSE,之前都为TRUE)
+            NSError *error = nil;
+            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
+            
+            NSArray *arr = [[[dic objectForKey:@"response"] objectForKey:@"feeds"] objectForKey:@"list"];
+            self.lastTime = [[[dic objectForKey:@"response"] objectForKey:@"feeds"] objectForKey:@"last_time"];
+            NSLog(@"%@" , self.lastTime);
+            for (int i = 0; i < arr.count; i++) {
+                NSDictionary *dict = [[arr objectAtIndex:i] objectForKey:@"post"];
+                PostModel *item = [[PostModel alloc] initWithDictionary:dict];
+                
+                //添加判断,剔除"投票"类内容
+                if (![dict objectForKey:@"image"]) {
+                    NSString *imageURl = [[arr objectAtIndex:i] objectForKey:@"image"];
+                    item.imageViewURL = imageURl;
+                    [self.papersModels addObject:item];
+                    
+                    [item release];
+                }
+            }
+        [self.hud removeFromSuperview];
         
-        //添加判断,剔除"投票"类内容
-        if (![dict objectForKey:@"image"]) {
-            item.imageViewURL = [dict objectForKey:@"image"];
-            NSString *imageURl = [[arr objectAtIndex:i] objectForKey:@"image"];
-            item.imageViewURL = imageURl;
-            item.id90 = [dict objectForKey:@"id"];
-            item.title = [dict objectForKey:@"title"];
-            item.description90 = [dict objectForKey:@"description"];   
-            item.appview = [dict objectForKey:@"appview"];;
-            
-            item.category.image_smallURL = [[dict objectForKey:@"category"] objectForKey:@"image_small"];
-            
-            [self.papersModels addObject:item];
-            
-            [item release];
-        }
-        
+        // 上拉刷新
+        MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
+        footer.refreshingTitleHidden = YES;
+        self.tableView.footer = footer;
     }
+
     
     //下拉刷新
     self.tableView.header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
     
-    
-    // 上拉刷新
-    MyDownLoadGitFooter *footer = [MyDownLoadGitFooter footerWithRefreshingTarget:self refreshingAction:@selector(getDataFromUrl)];
-    footer.refreshingTitleHidden = YES;
-    self.tableView.footer = footer;
-    
-    
     // 拿到数据之后, 刷新tableView
     [self.tableView reloadData];
     
-
 }
 
-#pragma mark - 下拉刷新 ( *** 待定 *** )
+#pragma mark - 下拉刷新
 -(void)loadNewData
 {
     self.lastTime = @"0";
+    
+    [self.papersModels removeAllObjects];
+    [self.tableView reloadData];
     [self getDataFromUrl];
 }
 
@@ -173,7 +180,6 @@
     // 获取文章大图
     cell.bigImageView.imageURL = [NSURL URLWithString:model.imageViewURL];
     // 获取category小图
-    
     cell.imageSmallView.imageURL = [NSURL URLWithString:model.category.image_smallURL];
     
     
@@ -186,18 +192,18 @@
     DetailsViewController *detailVC = [[DetailsViewController alloc] init];
     PostModel *model = [self.papersModels objectAtIndex:indexPath.row];
     detailVC.webHtml = model.appview;
+    detailVC.model = model;
+    
     [self presentViewController:detailVC animated:YES completion:nil];
     
     
 }
 
 
-
-
-#pragma mark - 隐藏状态栏
+//#pragma mark - 隐藏状态栏
 //- (BOOL)prefersStatusBarHidden
 //{
-//    return YES;
+//    return NO;
 //}
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath

@@ -24,8 +24,6 @@
 @property (nonatomic , retain) NSTimer *timer;
 
 
-//@property (nonatomic , assign) int myPages;
-//@property (nonatomic , retain) NSMutableArray *pages;
 
 //初始化scrollView,同时将存放轮播图url地址的数组传进来
 -(instancetype)initWithFrame:(CGRect)frame andPages:(NSArray *)pages;
